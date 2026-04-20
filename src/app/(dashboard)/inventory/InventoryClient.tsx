@@ -57,17 +57,18 @@ export function InventoryClient({ initialItems }: { initialItems: Item[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-coffee-950">Inventori Bahan Baku</h1>
-          <p className="text-coffee-600">Kelola stok gudang dan kafe.</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-coffee-950">Inventori Bahan Baku</h1>
+          <p className="text-sm sm:text-base text-coffee-600">Kelola stok gudang dan kafe.</p>
         </div>
         <button 
           onClick={() => setShowAddModal(true)}
-          className="bg-coffee-800 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-coffee-900 transition-colors"
+          className="bg-coffee-800 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg flex items-center justify-center space-x-1 sm:space-x-2 hover:bg-coffee-900 transition-colors whitespace-nowrap shrink-0 text-sm sm:text-base"
         >
           <Plus className="w-4 h-4" />
-          <span>Tambah Bahan</span>
+          <span className="hidden sm:inline">Tambah Bahan</span>
+          <span className="sm:hidden">Tambah</span>
         </button>
       </div>
 

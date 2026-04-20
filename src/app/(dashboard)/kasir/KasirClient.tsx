@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { processCheckout } from './actions'
-import { Coffee, Plus, Minus, Trash, ShoppingBag, CreditCard } from 'lucide-react'
+import { Coffee, Plus, Minus, Trash, ShoppingBag, CreditCard, Camera } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 
 type CartItem = {
@@ -17,6 +17,8 @@ export function KasirClient({ menus }: { menus: any[] }) {
   const [cart, setCart] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('Cash')
+  const [cashAmount, setCashAmount] = useState<number | ''>('')
+  const [proofFile, setProofFile] = useState<File | null>(null)
 
   const addToCart = (menu: any) => {
     const existing = cart.find(c => c.menu_id === menu.id)
@@ -48,9 +50,16 @@ export function KasirClient({ menus }: { menus: any[] }) {
   }
 
   const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  const changeAmount = paymentMethod === 'Cash' && typeof cashAmount === 'number' ? cashAmount - totalAmount : 0
+  
+  const isCheckoutDisabled = 
+    cart.length === 0 || 
+    loading || 
+    (paymentMethod === 'Cash' && (typeof cashAmount !== 'number' || cashAmount < totalAmount)) ||
+    (paymentMethod === 'QRIS' && !proofFile)
 
   const handleCheckout = async () => {
-    if (cart.length === 0) return
+    if (cart.length === 0 || isCheckoutDisabled) return
     setLoading(true)
     
     const items = cart.map(c => ({
@@ -60,12 +69,28 @@ export function KasirClient({ menus }: { menus: any[] }) {
       hpp_total: c.hpp_pokok * c.quantity
     }))
 
-    const res = await processCheckout(totalAmount, paymentMethod, items)
+    const formData = new FormData()
+    formData.append('total_amount', totalAmount.toString())
+    formData.append('payment_method', paymentMethod)
+    formData.append('items', JSON.stringify(items))
+    
+    if (paymentMethod === 'Cash' && typeof cashAmount === 'number') {
+      formData.append('cash_amount', cashAmount.toString())
+      formData.append('change_amount', changeAmount.toString())
+    }
+    
+    if (paymentMethod === 'QRIS' && proofFile) {
+      formData.append('proof_file', proofFile)
+    }
+
+    const res = await processCheckout(formData)
     if (res.error) {
       alert("Checkout Gagal: " + res.error)
     } else {
       alert("Checkout Berhasil!")
       setCart([])
+      setCashAmount('')
+      setProofFile(null)
     }
     setLoading(false)
   }
@@ -165,9 +190,55 @@ export function KasirClient({ menus }: { menus: any[] }) {
             </div>
           </div>
 
+          {paymentMethod === 'Cash' && (
+            <div className="mb-4 p-3 bg-white rounded-xl border border-coffee-200 shadow-sm">
+              <label className="text-xs font-medium text-coffee-600 block mb-2">Nominal Bayar Uang Pas / Lebih (Rp)</label>
+              <input 
+                type="number" 
+                value={cashAmount}
+                onChange={(e) => setCashAmount(e.target.value ? Number(e.target.value) : '')}
+                className="w-full border-coffee-200 rounded-lg px-3 py-2 border outline-none focus:ring-coffee-500 mb-3 text-lg font-bold"
+                placeholder="0"
+                min={totalAmount}
+              />
+              <div className="flex justify-between items-center text-sm pt-2 border-t border-coffee-50">
+                <span className="text-coffee-600">Kembalian:</span>
+                <span className={`font-bold ${changeAmount < 0 ? 'text-red-500' : 'text-green-600'}`}>
+                  Rp {changeAmount.toLocaleString()}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {paymentMethod === 'QRIS' && (
+            <div className="mb-4 p-3 bg-white rounded-xl border border-coffee-200 shadow-sm">
+              <label className="text-xs font-medium text-coffee-600 block mb-2">Bukti Pembayaran QRIS</label>
+              <label className="cursor-pointer flex flex-col items-center justify-center border-2 border-dashed border-coffee-300 rounded-lg p-6 hover:bg-coffee-50 transition-colors bg-coffee-50/50">
+                <Camera className="w-8 h-8 text-coffee-400 mb-2" />
+                <span className="text-sm font-medium text-coffee-700 text-center mb-1">
+                  Ambil Foto / Unggah Bukti
+                </span>
+                <span className="text-xs text-coffee-500 text-center max-w-[200px] truncate">
+                  {proofFile ? proofFile.name : 'Belum ada foto terpilih'}
+                </span>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  capture="environment" 
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      setProofFile(e.target.files[0])
+                    }
+                  }}
+                />
+              </label>
+            </div>
+          )}
+
           <button 
             onClick={handleCheckout}
-            disabled={cart.length === 0 || loading}
+            disabled={isCheckoutDisabled}
             className="w-full bg-green-600 text-white py-3 rounded-xl font-bold text-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-lg"
           >
             <CreditCard className="w-5 h-5" />
