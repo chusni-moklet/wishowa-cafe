@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { 
   Coffee, 
@@ -31,7 +32,9 @@ export function Sidebar({ role, isMobile, onClose }: { role: string, isMobile?: 
     <div className={`w-64 bg-coffee-950 text-white flex flex-col ${isMobile ? 'h-full' : 'hidden md:flex'}`}>
       <div className="p-6 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <Coffee className="w-8 h-8 text-coffee-300" />
+          <div className="w-9 h-9 rounded-full overflow-hidden border border-coffee-800 bg-white shadow-sm flex items-center justify-center shrink-0">
+            <Image src="/logo.png" alt="Wishowa Logo" width={36} height={36} className="object-cover" />
+          </div>
           <span className="text-xl font-bold tracking-wider">Wishowa</span>
         </div>
         {isMobile && (
