@@ -55,3 +55,15 @@ export async function addExpense(formData: FormData) {
   revalidatePath('/laporan')
   return { success: true }
 }
+export async function resetAllData() {
+  const supabase = await createClient()
+  
+  const { error } = await supabase.rpc('reset_all_data')
+  
+  if (error) return { error: error.message }
+  
+  revalidatePath('/laporan')
+  revalidatePath('/dashboard')
+  revalidatePath('/kasir')
+  return { success: true }
+}

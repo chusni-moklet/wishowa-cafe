@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { addIncome, addExpense } from './actions'
-import { Plus, ArrowDownRight, ArrowUpRight, Banknote, Download, Image as ImageIcon, X } from 'lucide-react'
+import { addIncome, addExpense, resetAllData } from './actions'
+import { Plus, ArrowDownRight, ArrowUpRight, Banknote, Download, Image as ImageIcon, X, Trash2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function LaporanClient({ income, expenses, transactions = [] }: { income: any[], expenses: any[], transactions?: any[] }) {
@@ -71,6 +71,20 @@ export function LaporanClient({ income, expenses, transactions = [] }: { income:
     document.body.removeChild(link)
   }
 
+  const handleResetData = async () => {
+    if (window.confirm('PERINGATAN BAHAYA!\n\nApakah Anda yakin ingin MENGHAPUS SEMUA DATA TRANSAKSI, PEMASUKAN, DAN PENGELUARAN?\n\nTindakan ini tidak dapat dibatalkan.')) {
+      setLoading(true)
+      const res = await resetAllData()
+      if (res.error) {
+        alert("Gagal mereset data: " + res.error)
+      } else {
+        alert("Semua data transaksi berhasil dihapus.")
+        window.location.reload()
+      }
+      setLoading(false)
+    }
+  }
+
   const handleAddIncome = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
@@ -127,6 +141,15 @@ export function LaporanClient({ income, expenses, transactions = [] }: { income:
           >
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">Export CSV</span>
+          </button>
+          
+          <button 
+            onClick={handleResetData}
+            disabled={loading}
+            className="bg-red-100 text-red-600 border border-red-200 px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-red-200 hover:text-red-700 transition-colors text-sm font-medium disabled:opacity-50"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Reset Semua Data</span>
           </button>
         </div>
       </div>
@@ -185,42 +208,7 @@ export function LaporanClient({ income, expenses, transactions = [] }: { income:
       </div>
 
       {/* Tables side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Riwayat Pemasukan</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto max-h-96">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-50 border-y border-gray-100 sticky top-0">
-                  <tr>
-                    <th className="px-4 py-3 font-medium">Tanggal</th>
-                    <th className="px-4 py-3 font-medium">Sumber</th>
-                    <th className="px-4 py-3 font-medium">Keterangan</th>
-                    <th className="px-4 py-3 font-medium text-right">Jumlah</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {filteredIncome.map(item => (
-                    <tr key={item.id}>
-                      <td className="px-4 py-3 text-gray-600">{new Date(item.created_at).toLocaleDateString()}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded text-xs ${item.source === 'transaction' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
-                          {item.source}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">{item.note || '-'}</td>
-                      <td className="px-4 py-3 text-right font-medium text-green-600">Rp {Number(item.amount).toLocaleString()}</td>
-                    </tr>
-                  ))}
-                  {filteredIncome.length === 0 && <tr><td colSpan={4} className="p-4 text-center text-gray-500">Tidak ada data</td></tr>}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-1 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Riwayat Pengeluaran</CardTitle>

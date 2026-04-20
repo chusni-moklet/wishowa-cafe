@@ -48,14 +48,34 @@ export async function processCheckout(formData: FormData) {
     return { error: error.message }
   }
 
-  if (transactionId) {
-    await supabase.from('transactions')
+  let currentTransactionId = transactionId
+  if (!currentTransactionId) {
+    const { data: latestTx } = await supabase
+      .from('transactions')
+      .select('id')
+      .eq('cashier_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+      
+    if (latestTx) {
+      currentTransactionId = latestTx.id
+    }
+  }
+
+  if (currentTransactionId) {
+    const { error: updateError } = await supabase.from('transactions')
       .update({
         payment_proof_url,
         cash_amount: payment_method === 'Cash' ? cash_amount : null,
         change_amount: payment_method === 'Cash' ? change_amount : null
       })
-      .eq('id', transactionId)
+      .eq('id', currentTransactionId)
+      
+    if (updateError) {
+      console.error("Update Transaction Error:", updateError)
+      return { error: 'Transaksi berhasil, tapi gagal menyimpan detail (Kembalian/Bukti): ' + updateError.message }
+    }
   }
 
   revalidatePath('/kasir')
