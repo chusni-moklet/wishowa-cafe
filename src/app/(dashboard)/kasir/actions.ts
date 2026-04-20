@@ -22,7 +22,7 @@ export async function processCheckout(formData: FormData) {
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
     
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('payment_proofs')
+      .from('payment-proofs')
       .upload(fileName, proofFile)
       
     if (uploadError) {
@@ -30,7 +30,7 @@ export async function processCheckout(formData: FormData) {
     }
     
     const { data: publicUrlData } = supabase.storage
-      .from('payment_proofs')
+      .from('payment-proofs')
       .getPublicUrl(fileName)
       
     payment_proof_url = publicUrlData.publicUrl

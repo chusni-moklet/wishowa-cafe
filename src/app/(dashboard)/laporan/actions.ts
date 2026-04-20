@@ -12,7 +12,14 @@ export async function getFinancialData() {
   // Get expenses
   const { data: expenseData } = await supabase.from('expenses').select('*').order('created_at', { ascending: false })
 
-  return { income: incomeData || [], expenses: expenseData || [] }
+  // Get transactions
+  const { data: transactionsData } = await supabase.from('transactions').select('*').order('created_at', { ascending: false })
+
+  return { 
+    income: incomeData || [], 
+    expenses: expenseData || [],
+    transactions: transactionsData || []
+  }
 }
 
 export async function addIncome(formData: FormData) {
