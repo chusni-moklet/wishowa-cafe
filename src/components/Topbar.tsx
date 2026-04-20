@@ -2,9 +2,9 @@
 
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
-import { LogOut, User } from 'lucide-react'
+import { LogOut, User, Menu } from 'lucide-react'
 
-export function Topbar({ userEmail, role }: { userEmail: string | undefined, role: string }) {
+export function Topbar({ userEmail, role, onMenuClick }: { userEmail: string | undefined, role: string, onMenuClick?: () => void }) {
   const router = useRouter()
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,8 +18,15 @@ export function Topbar({ userEmail, role }: { userEmail: string | undefined, rol
   }
 
   return (
-    <header className="h-16 bg-white border-b border-coffee-200 flex items-center justify-between px-6 shrink-0">
+    <header className="h-16 bg-white border-b border-coffee-200 flex items-center justify-between px-4 md:px-6 shrink-0">
       <div className="flex items-center text-coffee-800 font-semibold md:hidden">
+        <button 
+          onClick={onMenuClick}
+          className="mr-3 p-2 -ml-2 text-coffee-600 hover:bg-coffee-50 rounded-lg transition-colors"
+          aria-label="Open Menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
         Wishowa POS
       </div>
       <div className="hidden md:block"></div>

@@ -9,10 +9,11 @@ import {
   PackageSearch, 
   ClipboardList, 
   LineChart, 
-  Users 
+  Users,
+  X
 } from 'lucide-react'
 
-export function Sidebar({ role }: { role: string }) {
+export function Sidebar({ role, isMobile, onClose }: { role: string, isMobile?: boolean, onClose?: () => void }) {
   const pathname = usePathname()
 
   const navItems = [
@@ -27,10 +28,17 @@ export function Sidebar({ role }: { role: string }) {
   const filteredNav = navItems.filter(item => item.roles.includes(role))
 
   return (
-    <div className="w-64 bg-coffee-950 text-white flex flex-col hidden md:flex">
-      <div className="p-6 flex items-center space-x-3">
-        <Coffee className="w-8 h-8 text-coffee-300" />
-        <span className="text-xl font-bold tracking-wider">Wishowa</span>
+    <div className={`w-64 bg-coffee-950 text-white flex flex-col ${isMobile ? 'h-full' : 'hidden md:flex'}`}>
+      <div className="p-6 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <Coffee className="w-8 h-8 text-coffee-300" />
+          <span className="text-xl font-bold tracking-wider">Wishowa</span>
+        </div>
+        {isMobile && (
+          <button onClick={onClose} className="p-2 text-coffee-300 hover:text-white hover:bg-coffee-900 rounded-lg transition-colors">
+            <X className="w-6 h-6" />
+          </button>
+        )}
       </div>
       <nav className="flex-1 px-4 space-y-2 mt-4">
         {filteredNav.map((item) => {
@@ -40,6 +48,11 @@ export function Sidebar({ role }: { role: string }) {
             <Link
               key={item.name}
               href={item.href}
+              onClick={() => {
+                if (isMobile && onClose) {
+                  onClose();
+                }
+              }}
               className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${
                 isActive 
                   ? 'bg-coffee-800 text-white font-medium' 
