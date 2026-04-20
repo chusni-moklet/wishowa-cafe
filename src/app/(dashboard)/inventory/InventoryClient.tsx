@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { addItem, transferStock } from './actions'
-import { Plus, ArrowRightLeft } from 'lucide-react'
+import { addItem, transferStock, deleteItem } from './actions'
+import { Plus, ArrowRightLeft, Trash2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 
 type Item = {
@@ -39,6 +39,18 @@ export function InventoryClient({ initialItems }: { initialItems: Item[] }) {
     const res = await transferStock(formData)
     if (res.error) alert(res.error)
     setShowTransferModal(false)
+    setLoading(false)
+    window.location.reload()
+  }
+
+  const handleDelete = async (item: Item) => {
+    if (!confirm(`Apakah Anda yakin ingin menghapus ${item.name}?`)) return
+    
+    setLoading(true)
+    const res = await deleteItem(item.id)
+    if (res.error) {
+      alert(res.error)
+    }
     setLoading(false)
     window.location.reload()
   }
@@ -90,16 +102,25 @@ export function InventoryClient({ initialItems }: { initialItems: Item[] }) {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button 
-                        onClick={() => {
-                          setSelectedItem(item)
-                          setShowTransferModal(true)
-                        }}
-                        className="text-coffee-600 hover:text-coffee-900 flex items-center space-x-1 text-sm bg-white border border-coffee-200 px-3 py-1.5 rounded-md hover:bg-coffee-50 transition-colors"
-                      >
-                        <ArrowRightLeft className="w-4 h-4" />
-                        <span>Transfer</span>
-                      </button>
+                      <div className="flex items-center space-x-2">
+                        <button 
+                          onClick={() => {
+                            setSelectedItem(item)
+                            setShowTransferModal(true)
+                          }}
+                          className="text-coffee-600 hover:text-coffee-900 flex items-center space-x-1 text-sm bg-white border border-coffee-200 px-3 py-1.5 rounded-md hover:bg-coffee-50 transition-colors"
+                        >
+                          <ArrowRightLeft className="w-4 h-4" />
+                          <span>Transfer</span>
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(item)}
+                          className="text-red-600 hover:text-red-900 flex items-center justify-center p-1.5 rounded-md hover:bg-red-50 transition-colors"
+                          title="Hapus"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

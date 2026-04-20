@@ -77,3 +77,22 @@ export async function transferStock(formData: FormData) {
   revalidatePath('/inventory')
   return { success: true }
 }
+
+export async function deleteItem(itemId: string) {
+  const supabase = await createClient()
+  
+  const { error } = await supabase
+    .from('items')
+    .delete()
+    .eq('id', itemId)
+
+  if (error) {
+    if (error.code === '23503') {
+      return { error: 'Gagal menghapus: Item sedang digunakan di menu atau transaksi.' }
+    }
+    return { error: error.message }
+  }
+
+  revalidatePath('/inventory')
+  return { success: true }
+}
